@@ -38,7 +38,8 @@
   if (!_ && (typeof require !== 'undefined')) _ = require('underscore');
 
   // For Backbone's purposes, jQuery, Zepto, or Ender owns the `$` variable.
-  var $ = root.jQuery || root.Zepto || root.ender;
+  // var $ = root.jQuery || root.Zepto || root.ender;
+  var $ = (root.Sponsorpay && root.Sponsorpay.jQuery) ? root.Sponsorpay.jQuery : root.jQuery;
 
   // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
   // to its previous owner. Returns a reference to this Backbone object.
@@ -1257,4 +1258,4 @@
     throw new Error('A "url" property or function must be specified');
   };
 
-}).call(this);
+}).call(this.window);
