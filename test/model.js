@@ -279,6 +279,13 @@ $(document).ready(function() {
     equal(model.get('name'), 'Rob');
   });
 
+  test("Model: changedAttributes", function() {
+    var model = new Backbone.Model({a: 'a', b: 'b'});
+    equal(model.changedAttributes(), false);
+    equal(model.changedAttributes({a: 'a'}), false);
+    equal(model.changedAttributes({a: 'b'}).a, 'b');
+  });
+
   test("Model: change with options", function() {
     var value;
     var model = new Backbone.Model({name: 'Rob'});
@@ -543,13 +550,37 @@ $(document).ready(function() {
 
   test("unset fires change for undefined attributes", 1, function() {
     var model = new Backbone.Model({x: undefined});
-    model.bind('change:x', function(){ ok(true); });
+    model.on('change:x', function(){ ok(true); });
     model.unset('x');
   });
 
   test("set: undefined values", function() {
     var model = new Backbone.Model({x: undefined});
     ok('x' in model.attributes);
+  });
+
+  test("change fires change:attr", 1, function() {
+    var model = new Backbone.Model({x: 1});
+    model.set({x: 2}, {silent: true});
+    model.on('change:x', function(){ ok(true); });
+    model.change();
+  });
+
+  test("hasChanged is false after original values are set", function() {
+    var model = new Backbone.Model({x: 1});
+    model.on('change:x', function(){ ok(false); });
+    model.set({x: 2}, {silent: true});
+    ok(model.hasChanged());
+    model.set({x: 1}, {silent: true});
+    ok(!model.hasChanged());
+  });
+
+  test("set/hasChanged object prototype props", function() {
+    var model = new Backbone.Model();
+    ok(!model.hasChanged('toString'));
+    model.set({toString: undefined});
+    model.unset('toString', {silent: true});
+    ok(model.hasChanged());
   });
 
 });
