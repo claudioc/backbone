@@ -1,12 +1,25 @@
 $(document).ready(function() {
 
-  module("Backbone.Collection");
+  var lastRequest = null;
+  var sync = Backbone.sync;
 
-  window.lastRequest = null;
+  module("Backbone.Collection", {
 
-  Backbone.sync = function() {
-    lastRequest = _.toArray(arguments);
-  };
+    setup: function() {
+      Backbone.sync = function(method, model, options) {
+        lastRequest = {
+          method: method,
+          model: model,
+          options: options
+        };
+      };
+    },
+
+    teardown: function() {
+      Backbone.sync = sync;
+    }
+
+  });
 
   var a         = new Backbone.Model({id: 3, label: 'a'});
   var b         = new Backbone.Model({id: 2, label: 'b'});
@@ -48,34 +61,6 @@ $(document).ready(function() {
     equal(col.get(100), model);
     model.set({_id: 101});
     equal(col.get(101), model);
-  });
-
-  test("Collection: add model with attributes modified by set", function() {
-    var CustomSetModel = Backbone.Model.extend({
-      defaults: {
-        number_as_string: null //presence of defaults forces extend
-      },
-
-      validate: function (attributes) {
-        if (!_.isString(attributes.num_as_string)) {
-          return 'fail';
-        }
-      },
-
-      set: function (attributes, options) {
-        if (attributes.num_as_string) {
-          attributes.num_as_string = attributes.num_as_string.toString();
-        }
-        Backbone.Model.prototype.set.call(this, attributes, options);
-      }
-    });
-
-    var CustomSetCollection = Backbone.Collection.extend({
-      model: CustomSetModel
-    });
-    raises(function(){
-      new CustomSetCollection([{ num_as_string: 2 }]);
-    });
   });
 
   test("Collection: update index when id changes", function() {
@@ -338,18 +323,18 @@ $(document).ready(function() {
 
   test("Collection: fetch", function() {
     col.fetch();
-    equal(lastRequest[0], 'read');
-    equal(lastRequest[1], col);
-    equal(lastRequest[2].parse, true);
+    equal(lastRequest.method, 'read');
+    equal(lastRequest.model, col);
+    equal(lastRequest.options.parse, true);
 
     col.fetch({parse: false});
-    equal(lastRequest[2].parse, false);
+    equal(lastRequest.options.parse, false);
   });
 
   test("Collection: create", function() {
     var model = col.create({label: 'f'}, {wait: true});
-    equal(lastRequest[0], 'create');
-    equal(lastRequest[1], model);
+    equal(lastRequest.method, 'create');
+    equal(lastRequest.model, model);
     equal(model.get('label'), 'f');
     equal(model.collection, col);
   });
@@ -364,9 +349,7 @@ $(document).ready(function() {
       model: ValidatingModel
     });
     var col = new ValidatingCollection();
-    raises(function(){
-      equal(col.create({"foo":"bar"}),false);
-    });
+    equal(col.create({"foo":"bar"}), false);
   });
 
   test("Collection: a failing create runs the error callback", function() {
@@ -381,9 +364,8 @@ $(document).ready(function() {
     var flag = false;
     var callback = function(model, error) { flag = true; };
     var col = new ValidatingCollection();
-    raises(function(){
-      col.create({"foo":"bar"}, { error: callback });
-    });
+    col.create({"foo":"bar"}, { error: callback });
+    equal(flag, true);
   });
 
   test("collection: initialize", function() {
@@ -530,7 +512,7 @@ $(document).ready(function() {
   test("Collection: multiple copies of the same model", function() {
     var col = new Backbone.Collection();
     var model = new Backbone.Model();
-    raises(function() { col.add([model, model]) });
+    raises(function() { col.add([model, model]); });
     raises(function() { col.add([{id: 1}, {id: 1}]); });
   });
 

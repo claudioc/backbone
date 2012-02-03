@@ -198,7 +198,7 @@
   <div id="sidebar" class="interface">
 
     <a class="toc_title" href="#">
-      Backbone.js <span class="version">(0.9.0)</span>
+      Backbone.js <span class="version">(0.9.1)</span>
     </a>
 
     <a class="toc_title" href="#introduction">
@@ -240,6 +240,7 @@
       <li>– <a href="#Model-save">save</a></li>
       <li>– <a href="#Model-destroy">destroy</a></li>
       <li>– <a href="#Model-validate">validate</a></li>
+      <li>– <a href="#Model-isValid">isValid</a></li>
       <li>– <a href="#Model-url">url</a></li>
       <li>– <a href="#Model-urlRoot">urlRoot</a></li>
       <li>– <a href="#Model-parse">parse</a></li>
@@ -328,6 +329,7 @@
     </a>
     <ul class="toc_section">
       <li>– <a href="#Utility-noConflict">noConflict</a></li>
+      <li>– <a href="#Utility-setDomLibrary">setDomLibrary</a></li>
     </ul>
 
     <a class="toc_title" href="#examples">
@@ -340,6 +342,7 @@
       <li>– <a href="#examples-flow">Flow</a></li>
       <li>– <a href="#examples-audiovroom">AudioVroom</a></li>
       <li>– <a href="#examples-foursquare">Foursquare</a></li>
+      <li>- <a href="#examples-wunderkit">Wunderkit</a></li>
       <li>– <a href="#examples-do">Do</a></li>
       <li>– <a href="#examples-posterous">Posterous Spaces</a></li>
       <li>– <a href="#examples-groupon">Groupon Now!</a></li>
@@ -397,8 +400,8 @@
     </p>
 
     <p>
-      Backbone.js gives structure to your serious JavaScript web applications
-      by supplying <b>models</b> with key-value binding and custom events,
+      Backbone.js gives structure to web applications
+      by providing <b>models</b> with key-value binding and custom events,
       <b>collections</b> with a rich API of enumerable functions,
       <b>views</b> with declarative event handling, and connects it all to your
       existing API over a RESTful JSON interface.
@@ -436,11 +439,11 @@
 
     <table>
       <tr>
-        <td><a class="punch" href="backbone.js">Development Version (0.9.0)</a></td>
+        <td><a class="punch" href="backbone.js">Development Version (0.9.1)</a></td>
         <td><i>47kb, Full source, lots of comments</i></td>
       </tr>
       <tr>
-        <td><a class="punch" href="backbone-min.js">Production Version (0.9.0)</a></td>
+        <td><a class="punch" href="backbone-min.js">Production Version (0.9.1)</a></td>
         <td><i>5.3kb, Packed and gzipped</i></td>
       </tr>
     </table>
@@ -478,6 +481,11 @@
       code that looks into the DOM to find an element with a specific <i>id</i>,
       and update the HTML manually
       &mdash; when the model changes, the views simply update themselves.
+    </p>
+    
+    <p>
+      If you're new here, and aren't yet quite sure what Backbone is for, start by 
+      browsing the <a href="#examples">list of Backbone-based projects</a>.
     </p>
 
     <p>
@@ -546,10 +554,15 @@ object.trigger("alert", "an event");
       <b class="header">on</b><code>object.on(event, callback, [context])</code><span class="alias">Alias: bind</span>
       <br />
       Bind a <b>callback</b> function to an object. The callback will be invoked
-      whenever the <b>event</b> (specified by an arbitrary string identifier) is fired.
+      whenever the <b>event</b> is fired.
       If you have a large number of different events on a page, the convention is to use colons to
-      namespace them: <tt>"poll:start"</tt>, or <tt>"change:selection"</tt>
+      namespace them: <tt>"poll:start"</tt>, or <tt>"change:selection"</tt>.
+      The event string may also be a space-delimited list of several events...
     </p>
+    
+<pre>
+book.on("change:title change:author", ...);
+</pre>
 
     <p>
       To supply a <b>context</b> value for <tt>this</tt> when the callback is invoked,
@@ -591,8 +604,9 @@ object.off();                    // Removes all callbacks on object.
     <p id="Events-trigger">
       <b class="header">trigger</b><code>object.trigger(event, [*args])</code>
       <br />
-      Trigger callbacks for the given <b>event</b>. Subsequent arguments to
-      <b>trigger</b> will be passed along to the event callbacks.
+      Trigger callbacks for the given <b>event</b>, or space-delimited list of events. 
+      Subsequent arguments to <b>trigger</b> will be passed along to the 
+      event callbacks.
     </p>
 
     <h2 id="Model">Backbone.Model</h2>
@@ -1028,6 +1042,15 @@ account.set({access: "unlimited"}, {
 });
 </pre>
 
+    <p id="Model-isValid">
+      <b class="header">isValid</b><code>model.isValid()</code>
+      <br />
+      Models may enter an invalid state if you make changes to them silently
+      ... useful when dealing with form input. Call <tt>model.isValid()</tt>
+      to check if the model is currently in a valid state, according to your
+      <tt>validate</tt> function.
+    </p>
+      
     <p id="Model-url">
       <b class="header">url</b><code>model.url()</code>
       <br />
@@ -2203,10 +2226,6 @@ var DocumentView = Backbone.View.extend({
 
     <h2 id="Utility">Utility Functions</h2>
 
-    <p>
-
-    </p>
-
     <p id="Utility-noConflict">
       <b class="header">noConflict</b><code>var backbone = Backbone.noConflict();</code>
       <br />
@@ -2221,7 +2240,21 @@ var localBackbone = Backbone.noConflict();
 var model = localBackbone.Model.extend(...);
 </pre>
 
+    <p id="Utility-setDomLibrary">
+      <b class="header">setDomLibrary</b><code>Backbone.setDomLibrary(jQueryNew);</code>
+      <br />
+      If you have multiple copies of <tt>jQuery</tt> on the page, or simply want
+      to tell Backbone to use a particular object as it's DOM / Ajax library, 
+      this is the function for you.
+    </p>
+
     <h2 id="examples">Examples</h2>
+    
+    <p>
+      The list of examples that follows, while long, is not exhaustive. If you've 
+      worked on an app that uses Backbone, please add it to the 
+      <a href="https://github.com/documentcloud/backbone/wiki/Projects-and-Companies-using-Backbone">wiki page of Backbone apps</a>.
+    </p>
 
     <p id="examples-todos">
       <a href="http://jgn.me/">Jérôme Gravel-Niquet</a> has contributed a
@@ -2325,6 +2358,27 @@ var model = localBackbone.Model.extend(...);
     <div style="text-align: center;">
       <a href="http://foursquare.com">
         <img src="docs/images/foursquare.png" alt="Foursquare" class="example_image" />
+      </a>
+    </div>
+    
+    <h2 id="examples-wunderkit">Wunderkit</h2>
+
+    <p>
+      <a href="http://get.wunderkit.com/">Wunderkit</a> is a productivity and 
+      social collaboration platform. It
+      uses Backbone.js as the foundation for the single-page application, 
+      which is backed by a RESTful Rails API. 
+      The freedom and agility that Backbone gives to developers
+      made it possible to build Wunderkit in a very short time and
+      extend it with custom features: a write-through cache using HTML5
+      localStorage, and a view hierarchy extension to easily manage trees of
+      sub-views. Aside from Backbone, Wunderkit also
+      depends on jQuery, Underscore, Require.js, LESS and doT.js templates.
+    </p>
+
+    <div style="text-align: center;">
+      <a href="http://get.wunderkit.com/">
+        <img src="docs/images/wunderkit.png" alt="Wunderkit" class="example_image" />
       </a>
     </div>
 
@@ -2456,23 +2510,6 @@ var model = localBackbone.Model.extend(...);
     <div style="text-align: center;">
       <a href="http://www.joindiaspora.com/">
         <img src="docs/images/diaspora.png" alt="Diaspora" class="example_image" />
-      </a>
-    </div>
-
-    <h2 id="examples-trajectory">Trajectory</h2>
-
-    <p>
-      <a href="https://www.apptrajectory.com/">Trajectory</a> is an agile
-      software planning tool used to discuss wireframes, record decisions made,
-      relate user stories and bugs to discussions, and track your progress and
-      plan the future. With Rails on the backend, Trajectory uses Backbone.js
-      heavily to provide a fluid story planning interface that even updates in
-      real-time based on the actions of other users.
-    </p>
-
-    <div style="text-align: center;">
-      <a href="http://www.apptrajectory.com/">
-        <img src="docs/images/trajectory.png" alt="Trajectory" class="example_image" />
       </a>
     </div>
 
@@ -3133,6 +3170,24 @@ ActiveRecord::Base.include_root_in_json = false
 
     <h2 id="changelog">Change Log</h2>
     
+    <b class="header">0.9.1</b> &mdash; <small><i>Feb. 2, 2012</i></small> &mdash; <a href="https://github.com/documentcloud/backbone/compare/0.9.0...0.9.1">Diff</a><br />
+    <ul style="margin-top: 5px;">
+      <li>
+        Reverted to 0.5.3-esque behavior for validating models. Silent changes
+        no longer trigger validation (making it easier to work with forms).
+        Added an <tt>isValid</tt> function that you can use to check if a model
+        is currently in a valid state.
+      </li>
+      <li>
+        If you have multiple versions of jQuery on the page, you can now tell
+        Backbone which one to use with <tt>Backbone.setDomLibrary</tt>.
+      </li>
+      <li>
+        Fixes regressions in <b>0.9.0</b> for routing with "root", saving with
+        both "wait" and "validate", and the order of nested "change" events.
+      </li>
+    </ul>
+    
     <b class="header">0.9.0</b> &mdash; <small><i>Jan. 30, 2012</i></small> &mdash; <a href="https://github.com/documentcloud/backbone/compare/0.5.3...0.9.0">Diff</a><br />
     <ul style="margin-top: 5px;">
       <li>
@@ -3146,6 +3201,10 @@ ActiveRecord::Base.include_root_in_json = false
         be used instead of manually setting a view's <tt>el</tt>. It will
         both set <tt>view.el</tt> and <tt>view.$el</tt> correctly, as well as 
         re-delegating events on the new DOM element.
+      </li>
+      <li>
+        You can now bind and trigger multiple spaced-delimited events at once.
+        For example: <tt>model.on("change:name change:age", ...)</tt>
       </li>
       <li>
         When you don't know the key in advance, you may now call 
@@ -3176,6 +3235,11 @@ ActiveRecord::Base.include_root_in_json = false
       <li>
         A view's <tt>events</tt> hash may now also contain direct function 
         values as well as the string names of existing view methods.
+      </li>
+      <li>
+        Validation has gotten an overhaul &mdash; a model's <tt>validate</tt> function
+        will now be run even for silent changes, and you can no longer create 
+        a model in an initially invalid state.
       </li>
       <li>
         Added <tt>shuffle</tt> and <tt>initial</tt> to collections, proxied 
@@ -3211,6 +3275,10 @@ ActiveRecord::Base.include_root_in_json = false
       <li>
         Although you shouldn't be writing your routes with them in any case &mdash;
         leading slashes (<tt>/</tt>) are now stripped from routes.
+      </li>
+      <li>
+        Calling <tt>clone</tt> on a model now only passes the attributes
+        for duplication, not a reference to the model itself.
       </li>
     </ul>
 
